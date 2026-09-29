@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Digital Boarding Pass | CineLuxe IMAX</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --card-bg: rgba(18, 24, 38, 0.75);
+      --inner-panel: rgba(255, 255, 255, 0.035);
+      --primary-red: #e50914;
+      --gold-accent: #f5c518;
+      --emerald-glow: #10b981;
+      --text-pure: #ffffff;
+      --text-dim: #94a3b8;
+      --card-border: rgba(255, 255, 255, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-pure);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Background Light Orbs */
+    .orb-1 {
+      position: absolute;
+      top: -120px;
+      left: 15%;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(229, 9, 20, 0.25) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-2 {
+      position: absolute;
+      top: 300px;
+      right: 10%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(245, 197, 24, 0.15) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* Success Header */
+    .confirmed-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .pulse-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 9999px;
+      color: var(--emerald-glow);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+    }
+
+    .confirmed-header h1 {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 6px;
+    }
+
+    .confirmed-header p {
+      color: var(--text-dim);
+      font-size: 15px;
+    }
+
+    /* Ticket Container (Glassmorphism) */
+    .ticket-container {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.85);
+      position: relative;
+    }
+
+    /* Poster Header Hero inside Ticket */
+    .ticket-hero {
+      position: relative;
+      height: 230px;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      padding: 24px 30px;
+    }
+
+    .ticket-hero-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.4) saturate(1.2);
+      transform: scale(1.05);
+      z-index: 0;
+    }
+
+    .ticket-hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(7, 9, 14, 0.2) 0%, rgba(18, 24, 38, 0.95) 90%, var(--card-bg) 100%);
+      z-index: 1;
+    }
+
+    .ticket-hero-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .movie-headline h2 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+
+    .experience-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold-accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: rgba(245, 197, 24, 0.12);
+      border: 1px solid rgba(245, 197, 24, 0.3);
+      padding: 2px 10px;
+      border-radius: 6px;
+    }
+
+    .ref-chip {
+      text-align: right;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 8px 14px;
+      border-radius: 12px;
+    }
+
+    .ref-chip .lbl {
+      font-size: 9px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+    }
+
+    .ref-chip .val {
+      font-family: 'Space Grotesk', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #fff;
+    }
+
+    /* Ticket Body Specs */
+    .ticket-body {
+      padding: 20px 30px 24px;
+    }
+
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      background: var(--inner-panel);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 18px;
+      padding: 18px 20px;
+    }
+
+    .spec-box .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+
+    .spec-box .value {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Perforation Cut */
+    .perforation {
+      position: relative;
+      height: 32px;
+      display: flex;
+      align-items: center;
+    }
+
+    .perforation .dashed-track {
+      width: 100%;
+      height: 2px;
+      border-top: 2px dashed rgba(255, 255, 255, 0.18);
+      margin: 0 24px;
+    }
+
+    .perforation::before,
+    .perforation::after {
+      content: '';
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      background-color: var(--bg-dark);
+      border-radius: 50%;
+      top: 2px;
+    }
+
+    .perforation::before {
+      left: -14px;
+      box-shadow: inset -4px 0 6px rgba(0, 0, 0, 0.6);
+    }
+
+    .perforation::after {
+      right: -14px;
+      box-shadow: inset 4px 0 6px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Ticket Stub (QR & Amount) */
+    .ticket-stub {
+      padding: 16px 30px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .billing-info .title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .billing-info .grand-total {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      margin: 2px 0;
+    }
+
+    .billing-info .badge {
+      font-size: 11px;
+      color: var(--emerald-glow);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .qr-frame {
+      background: #fff;
+      padding: 8px;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      text-align: center;
+    }
+
+    .qr-frame img {
+      width: 80px;
+      height: 80px;
+      display: block;
+      border-radius: 6px;
+    }
+
+    .qr-frame span {
+      display: block;
+      margin-top: 4px;
+      font-size: 8px;
+      font-weight: 800;
+      color: #111;
+      letter-spacing: 0.5px;
+    }
+
+    /* Buttons */
+    .action-controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 14px 20px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.25s ease;
+      text-decoration: none;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #e50914 0%, #b80710 100%);
+      color: #fff;
+      box-shadow: 0 10px 25px rgba(229, 9, 20, 0.35);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(229, 9, 20, 0.45);
+    }
+
+    .btn-glass {
+      background: var(--card-bg);
+      color: #fff;
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(10px);
+    }
+    .btn-glass:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
+    }
+
+    /* Notice Card */
+    .security-notice {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 20px;
+      padding: 20px 24px;
+      margin-top: 24px;
+    }
+
+    .security-notice h3 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 12px;
+      color: var(--gold-accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .notice-list {
+      display: grid;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    .notice-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .notice-item i {
+      color: var(--primary-red);
+      margin-top: 3px;
+      font-size: 11px;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 36px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 600px) {
+      .spec-grid { grid-template-columns: 1fr; }
+      .ticket-hero { height: 180px; padding: 18px 20px; }
+      .ticket-body, .ticket-stub { padding-left: 20px; padding-right: 20px; }
+      .action-controls { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="orb-1"></div>
+  <div class="orb-2"></div>
+
+  <div class="wrapper">
+    <!-- Header Badge -->
+    <div class="confirmed-header">
+      <div class="pulse-badge">
+        <i class="fa-solid fa-circle-check"></i> Booking Confirmed
+      </div>
+      <h1>Ready For The Big Screen</h1>
+      <p>Hello <strong th:text="${userName ?: 'Movie Enthusiast'}" style="color: #fff;"></strong>, here is your entry pass.</p>
+    </div>
+
+    <!-- Digital Ticket -->
+    <div class="ticket-container">
+      
+      <!-- Poster Backdrop Hero -->
+      <div class="ticket-hero">
+        <img class="ticket-hero-bg" 
+             th:src="${poster != null ? poster : 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=1000&auto=format&fit=crop'}"
+             src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=1000&auto=format&fit=crop" 
+             alt="Movie Backdrop">
+        <div class="ticket-hero-gradient"></div>
+
+        <div class="ticket-hero-content">
+          <div class="movie-headline">
+            <h2 th:text="${movieTitle ?: 'Movie Title Unavailable'}"></h2>
+            <div class="experience-tag">
+              <i class="fa-solid fa-cube"></i> <span th:text="${screenInfo ?: 'Audi 01 • Dolby Atmos'}"></span>
+            </div>
+          </div>
+          <div class="ref-chip">
+            <div class="lbl">PASS REF</div>
+            <div class="val" th:text="${bookingReference ?: 'N/A'}"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Specs Grid -->
+      <div class="ticket-body">
+        <div class="spec-grid">
+          <div class="spec-box">
+            <div class="label"><i class="fa-regular fa-clock"></i> Show Date & Time</div>
+            <div class="value" th:text="${showDateTime ?: 'Date & Time Pending'}"></div>
+          </div>
+          <div class="spec-box">
+            <div class="label"><i class="fa-solid fa-map-pin"></i> Cinema Hall</div>
+            <div class="value" th:text="${theaterName ?: 'CineLuxe Central'}"></div>
+          </div>
+          <div class="spec-box">
+            <div class="label"><i class="fa-solid fa-couch"></i> Reserved Seats</div>
+            <div class="value"><span th:text="${numberOfSeats ?: '1'}"></span> Ticket(s)</div>
+          </div>
+          <div class="spec-box">
+            <div class="label"><i class="fa-solid fa-receipt"></i> Rate Per Seat</div>
+            <div class="value" th:text="${ticketPrice != null ? '$' + ticketPrice : 'N/A'}"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ticket Perforation -->
+      <div class="perforation">
+        <div class="dashed-track"></div>
+      </div>
+
+      <!-- Bottom Stub (QR & Pricing) -->
+      <div class="ticket-stub">
+        <div class="billing-info">
+          <div class="title">Total Amount Paid</div>
+          <div class="grand-total" th:text="${totalAmount != null ? '$' + totalAmount : '$0.00'}"></div>
+          <div class="badge">
+            <i class="fa-solid fa-shield-halved"></i> Verified Digital Payment
+          </div>
+        </div>
+
+        <div class="qr-frame" th:if="${bookingReference != null}">
+          <img th:src="@{'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + ${bookingReference}}"
+               src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=CINEPASS"
+               alt="Digital Gate QR">
+          <span>SCAN AT ENTRY</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-controls">
+      <a th:href="@{'http://localhost:3000?bookingRef=' + ${bookingReference}}"
+         href="http://localhost:3000"
+         target="_blank"
+         class="btn-action btn-primary">
+        <i class="fa-solid fa-download"></i> Save Ticket PDF
+      </a>
+      
+      <a th:href="@{'https://api.whatsapp.com/send?text=' + 'Hey! Here is my movie booking ticket for ' + ${movieTitle} + ' (Pass Ref: ' + ${bookingReference} + '). Total Seats: ' + ${numberOfSeats} + '.'}"
+         href="https://api.whatsapp.com/send?text=Check%20out%20my%20CinePass%20booking!"
+         target="_blank"
+         class="btn-action btn-glass">
+        <i class="fa-solid fa-share-nodes"></i> Share Pass
+      </a>
+    </div>
+
+    <!-- Guidelines -->
+    <div class="security-notice">
+      <h3><i class="fa-solid fa-circle-exclamation"></i> Cinema Instructions</h3>
+      <div class="notice-list">
+        <div class="notice-item">
+          <i class="fa-solid fa-angle-right"></i>
+          <span>Present this digital pass directly on your smartphone at the hall scanner.</span>
+        </div>
+        <div class="notice-item">
+          <i class="fa-solid fa-angle-right"></i>
+          <span>Auditorium doors close 5 minutes prior to the national anthem/previews.</span>
+        </div>
+        <div class="notice-item">
+          <i class="fa-solid fa-angle-right"></i>
+          <span>Outside food and beverages are not permitted inside the theater premises.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>© 2026 CineLuxe Entertainment Networks. Powered by Spring Boot 3 & Thymeleaf.</p>
+    </footer>
+
+  </div>
+
+</body>
+</html>
